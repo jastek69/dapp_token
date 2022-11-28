@@ -6,12 +6,16 @@ const tokens = (n) => {
 }
 
 describe('Token', ()=> {        // tests go inside here ... see https://hardhat.org/tutorial/testing-contracts
-    let token
-
+    let token, accounts, deployer
+    
     beforeEach(async() => {
         // Fetch Token from Blockchain
         const Token = await ethers.getContractFactory('Token') // gets the actual Contract
         token = await Token.deploy('Sobek', 'SOB', '1000000')    // get Deployed instance of that contract
+        
+        // Get accounts in the test suite
+        accounts = await ethers.getSigners()
+        deployer = accounts[0]        
     })
 
     describe('Deployment', () => {
@@ -36,14 +40,10 @@ describe('Token', ()=> {        // tests go inside here ... see https://hardhat.
             expect(await token.totalSupply()).to.equal(totalSupply)
         })
 
+        it('assgns total supply to deployer', async () => {
+            expect(await token.balanceOf(deployer.address)).to.equal(totalSupply)    
+        })
+
     })
-
-    // Describe Spending ...
-
-    // Describe Approving ...
-
-    // Describe ...
-    
-   
 
 })
