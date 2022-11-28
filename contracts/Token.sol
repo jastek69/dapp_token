@@ -10,14 +10,23 @@ contract Token {
     uint256 public totalSupply;
 
     // Track balances
-    mapping(address => uint256) public balanceOf;
+    mapping(address => uint256) public balanceOf; // Mapping creating Key Value Pair of Address and how many Tokens it has
+    mapping(address => mapping(address => uint256)) public allowance;  // Nested mapping when placing addres of spender gives another mapping back
+                                                                       // returns all the potential spenders AND how many tokens they are approved for
     
     // Send tokens
     event Transfer(     // Transfer Event ERC-20 requirement: https://ethereum.org/en/developers/docs/standards/tokens/erc-20/#events
         address indexed from,
         address indexed to,
         uint256 value
+    );
+    
+    event Approval(     //Approval Event requirement
+        address indexed owner,
+        address indexed spender,
+        uint256 value
     ); 
+
 
     constructor(
         string memory _name,
@@ -49,4 +58,18 @@ contract Token {
 
         return true;
     }
+
+    function approve(address _spender, uint256 _value) 
+        public
+        returns(bool success) 
+    {
+        require(_spender != address(0));
+
+        allowance[msg.sender][_spender] = _value;
+        
+        emit Approval(msg.sender, _spender, _value);
+        return true;  // ERC20 Requirement to return True
+    }
+
+
 }
