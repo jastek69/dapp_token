@@ -39,25 +39,35 @@ contract Token {
         balanceOf[msg.sender] = totalSupply;
     }
 
-    function transfer(address _to, uint256 _value)
+    function transfer(address _to, uint256 _value)  // similar to tranferFrom function
         public 
         returns (bool success) 
     {
         // Require that sender has enough tokens to spend - ERC20 requirement
         require(balanceOf[msg.sender] >= _value);
-        require(_to != address(0));
+        
+        _transfer(msg.sender, _to, _value);
+        
+        return true;
+    }
+
+
+    function _transfer(address _from, address _to, uint _value)  // Internal function to be used for transfer and transferFrom
+        internal {  
+            require(_to != address(0));
 
         // Deduct tokens from spender
-        balanceOf[msg.sender] = balanceOf[msg.sender] - _value;
+        balanceOf[_from] = balanceOf[_from] - _value;
 
         // Credit tokens to receiver
         balanceOf[_to] = balanceOf[_to] + _value;
-        
-        //Emit transfer event
-        emit Transfer(msg.sender, _to, _value);
 
-        return true;
+        emit Transfer(_from, _to, _value);
+
     }
+    
+
+
 
     function approve(address _spender, uint256 _value) 
         public
@@ -69,6 +79,31 @@ contract Token {
         
         emit Approval(msg.sender, _spender, _value);
         return true;  // ERC20 Requirement to return True
+    }
+
+    function transferFrom(      // Check that someone is able to spend tokens on our behalf and then spend them
+        address _from,
+        address _to,
+        uint256 _value
+    ) 
+    
+        public 
+        returns (bool success)
+    {
+
+        // check approval - only spend if allowed
+        require(_value <= balanceOf[_from]);        //makes sure wallet has tokens
+        require(_value <= allowance[_from][msg.sender]);
+
+
+        // Reset Allowance - prevent double spend so update approval mapping
+        allowance[_from][msg.sender] = allowance[_from][msg.sender] - _value;
+
+        // spend tokens similar to transfer function
+        _transfer(_from, _to, _value);
+
+        return true;    //ERC 20 spec
+
     }
 
 
